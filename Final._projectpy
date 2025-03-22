@@ -1,0 +1,66 @@
+from abc import ABC, abstractmethod
+import dispatch
+from datetime import datetime
+
+class People(ABC):
+    def __init__(self, Name, Age, phone,address):
+        self.Name=Name
+        self.Age=Age
+        self.phone=phone
+        self.address=address
+
+    @abstractmethod
+    def preview_info(self):
+        pass
+
+
+class Passport:
+    def __init__(self,birth_place,proffession,passport_no):
+        self.birth_place=birth_place
+        self.proffession=proffession
+        self.passport_no=passport_no
+
+class Passenger(People,Passport):
+    def __init__(self, Name, Age ,phone, address,birth_place,proffession,passport_no):
+        People().__init__(Name, Age, phone, address)
+        Passport().__init__(birth_place,proffession,passport_no)
+
+
+        def Takepass_info(self):
+         pass_no=input("Enter Passport No:")
+        #search in database
+         self.preview_info()
+        
+ #data base call, user enters passport no if it is found in the database then preview_info is called if not then fail massage apear       
+    def preview_info(self):
+            print(" Your Passport Details:")
+            print("Name:",self.Name)
+            print("Age:",self.Age)
+            print("Phone:",self.phone)
+            print("Address:",self.address)
+            print("Birth Place:",self.birth_place)
+            print("Profession:",self.proffession)
+            print("Passport No:",self.passport_no)
+    
+    
+class ticket():
+    def __init__(self, ticket_no, seat_no, flight_no, date, time, destination):
+        self.ticket_no=ticket_no
+        self.seat_no=seat_no
+        self.flight_no=flight_no
+        self.date=date
+        self.time=time
+        self.destination=destination
+
+#after making a reservation user can see the ticket details
+
+    def ticket_details(self):
+        print("Your ticket details  ")
+        print("Ticket No:",self.ticket_no)
+        print("Seat No:",self.seat_no)
+        print("Flight No:",self.flight_no)
+        print("Date:",self.date)
+        print("Time:",self.time)
+        print("Destination:",self.destination)
+        
+        
