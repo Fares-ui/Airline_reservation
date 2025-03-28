@@ -1,66 +1,213 @@
 from abc import ABC, abstractmethod
-import dispatch
+from multipledispatch import dispatch
 from datetime import datetime
+from typing import List
+
 
 class People(ABC):
-    def __init__(self, Name, Age, phone,address):
-        self.Name=Name
-        self.Age=Age
-        self.phone=phone
-        self.address=address
+    def __init__(self, name: str, age: int, phone: str, address: str, ID: str):
+        self.name = name
+        self.age = age
+        self.phone = phone
+        self.address = address
+        self.ID = ID
+    
+    def update_info(self, name=None, age=None, ID=None, phone_number=None, email=None, address=None):
+        if name:
+            self.name = name
+        if age:
+            self.age = age
+        if ID:
+            self.ID = ID
+        if phone_number:
+            self.phone_number = phone_number
+        if email:
+            self.email = email
+        if address:
+            self.address = address    
 
     @abstractmethod
     def preview_info(self):
+       #Abstract method to display user information.
         pass
 
 
 class Passport:
-    def __init__(self,birth_place,proffession,passport_no):
-        self.birth_place=birth_place
-        self.proffession=proffession
-        self.passport_no=passport_no
-
-class Passenger(People,Passport):
-    def __init__(self, Name, Age ,phone, address,birth_place,proffession,passport_no):
-        People().__init__(Name, Age, phone, address)
-        Passport().__init__(birth_place,proffession,passport_no)
+    def __init__(self, birth_place: str, profession: str, passport_no: int):
+        self.birth_place = birth_place
+        self.profession = profession
+        self.passport_no = passport_no
 
 
-        def Takepass_info(self):
-         pass_no=input("Enter Passport No:")
-        #search in database
-         self.preview_info()
+class Passenger(People, Passport):
+      def __init__(self, name: str, age: int, phone: int, address: str, ID: int,
+                   birth_place: str, profession: str, passport_no: int):
+        People.__init__(self, name, age, phone, address, ID)
+        Passport.__init__(self, birth_place, profession, passport_no)
+    
+    #will be edited after database
+    #def take_passport_info(self):
+        #Simulates passport number input and verification.
+        #pass_no = input("Enter Passport No: ")
+        #if pass_no == self.passport_no:
+            #self.preview_info()
+        #else:
+            #print("Passport not found in database.") #will be edited after database
+
+ #data base call, user enters passport no if it is found in the database then 
+#preview_info is called if not then fail massage apear       
+
+      def preview_info(self):
+        #Displays passenger's passport details.
+        print("Your Passport Details:")
+        print(f"Name: {self.name}")
+        print(f"Age: {self.age}")
+        print(f"Phone: {self.phone}")
+        print(f"Address: {self.address}")
+        print(f"Birth Place: {self.birth_place}")
+        print(f"Profession: {self.profession}")
+        print(f"Passport No: {self.passport_no}")
+
+class Seat:
+    def __init__(self, seat_number: int, class_type: str, price: float, available: bool = True):
+        self.seat_number = seat_number
+        self.class_type = class_type
+        self.price = price
+        self.available = available
+
+    #def book_seat(self):
+
+    #Books the seat if available.
+        #if self.available:
+              # Checks if the seat is available
+            #self.available = False  # Marks the seat as booked (unavailable)
+            #return True  # Returns True to indicate the booking was successful
+       # return False  # Returns False if the seat was already booked
+
+
+    def display_info(self):
+        #Displays information about the seat.
+        availability = "Available" if self.available else "Booked" 
+        print(f"Seat Number: {self.seat_number}, Class: {self.class_type}, Price: ${self.price}, Status: {availability}")
+
+
+class Flight(Seat):
+    def __init__(self, flight_number: str, origin: str, destination: str):
+        self.flight_number = flight_number
+        self.origin = origin
+        self.destination = destination
+        self.seats = []  # List of Seat objects
+
+    def add_seat(self, seat: Seat):
+        #Adds a seat to the flight.
+        self.seats.append(seat)
+
+    #def book_seat(self, seat_number: int, passenger_name: str):
+        #Books a seat if available.
+        #for seat in self.seats:
+            #if seat.seat_number == seat_number:
+                #if seat.book_seat():
+                    #print(f"Seat {seat_number} booked for {passenger_name}.")
+                #else:
+                    #print(f"Seat {seat_number} is not available.")
+                #return
+        #print(f"Seat {seat_number} does not exist.")
+
+    def display_seats(self):
+       #Displays all seats in the flight.
+        print(f" Flight {self.flight_number} - {self.origin} to {self.destination}")
+        print("Available Seats:")
+        for seat in self.seats:
+            seat.display_info()
+
+
+class Ticket:
+      def __init__(self, ticket_no: int, seat_no: int , flight_no: int , date: str , time: str, destination: str):
+        self.ticket_no = ticket_no
+        self.seat_no = seat_no
+        self.flight_no = flight_no
+        self.date = date
+        self.time = time
+        self.destination = destination
+
+
+ #Displays ticket details after reservation.
+      def ticket_details(self):
+        print("Your Ticket Details:")
+        print(f"Ticket No: {self.ticket_no}")
+        print(f"Seat No: {self.seat_no}")
+        print(f"Flight No: {self.flight_no}")
+        print(f"Date: {self.date}")
+        print(f"Time: {self.time}")
+        print(f"Destination: {self.destination}")
+
+
+class Pilot(People):
+    def __init__(self, name: str, age: int, phone: int, address: str, ID: str,
+                 flight_hours: int, license_num: int, certification: List[str], flights: int):
+        super().__init__(name, age, phone, address, ID)
+        self.flight_hours = flight_hours
+        self.license_num = license_num
+        self.certification = certification
+        self.flights = flights
+
+    def assign_flight(self, completed_flights: int):
+        #Updates the number of completed flights.
+        self.flights += completed_flights # completed_flights her is number of flights that is done it will be added to the number of flights
+
+    def get_flight_hours(self) -> int: #-> int returns flight_hours int only
+        #Returns total flight hours.
+        return self.flight_hours
+
+    def display_info(self):
+        #Displays pilot's information.
+        print(f"Pilot Name: {self.name}, Age: {self.age}")
+        print(f"Pilot Phone: {self.phone}, Address: {self.address}")
+        print(f"Pilot License Number: {self.license_num}, Pilot ID: {self.ID}")
+        print(f"Pilot Certifications: {', '.join(self.certification)}") # (join )converts lists of strings into a formatted string.
+        print(f"Pilot Total Flights: {self.flights}, Flight Hours: {self.flight_hours}")
+
+  # sub class to print the Pilot possetion and how many hours and flight_hours and cirtefications dose he take to be in this possetion    
+    @abstractmethod
+    def possession(self):
+        pass
+
+
+class MilitaryPilot(Pilot):
+      def __init__(self, name: str, age: str, phone: str, address: str, ID: str,
+                 flight_hours: int, license_num: int, certification: List[str],
+                 flights: int, clearance_level: str):
+        super().__init__(name, age, phone, address, ID, flight_hours, license_num, certification, flights)
+        self.clearance_level = clearance_level
+
+      def possession(self):
+        """Displays the pilot's clearance level."""
+        print(f"This pilot possesses clearance level: {self.clearance_level}")
+
+      def preview_info(self):
+        #Implements the abstract method from People.
+        self.display_info()
+        print(f"Clearance Level: {self.clearance_level}")
+
+
+
+passenger1 = Passenger("Mohamed",25,20010653,"Alexandria",325044561,"cairo","Teacher",32561320786452)
+passenger1.preview_info()
+seat1 = Seat(14,"Economy",10000,True)
+seat1.display_info()
+flight1 = Flight(8452,"Egypt","USA")
+flight1.add_seat(15)
+#flight1.display_info() #has error will be fixed
+ticket1 = Ticket(4511,10,1545,"20/5/2025","2am","USA")
+ticket1.ticket_details()
+#pilot1 = Pilot()
+#militaryPilot1 = MilitaryPilot()
+
+
+
         
- #data base call, user enters passport no if it is found in the database then preview_info is called if not then fail massage apear       
-    def preview_info(self):
-            print(" Your Passport Details:")
-            print("Name:",self.Name)
-            print("Age:",self.Age)
-            print("Phone:",self.phone)
-            print("Address:",self.address)
-            print("Birth Place:",self.birth_place)
-            print("Profession:",self.proffession)
-            print("Passport No:",self.passport_no)
-    
-    
-class ticket():
-    def __init__(self, ticket_no, seat_no, flight_no, date, time, destination):
-        self.ticket_no=ticket_no
-        self.seat_no=seat_no
-        self.flight_no=flight_no
-        self.date=date
-        self.time=time
-        self.destination=destination
 
-#after making a reservation user can see the ticket details
 
-    def ticket_details(self):
-        print("Your ticket details  ")
-        print("Ticket No:",self.ticket_no)
-        print("Seat No:",self.seat_no)
-        print("Flight No:",self.flight_no)
-        print("Date:",self.date)
-        print("Time:",self.time)
-        print("Destination:",self.destination)
+     
         
         
