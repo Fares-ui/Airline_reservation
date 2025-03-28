@@ -1,13 +1,14 @@
 from abc import ABC, abstractmethod
-import dispatch
+ from multipledispatch import dispatch
 from datetime import datetime
 
 class People(ABC):
-    def __init__(self, Name, Age, phone,address):
+    def __init__(self, Name, Age, phone,address,ID):
         self.Name=Name
         self.Age=Age
         self.phone=phone
         self.address=address
+        self.ID=ID 
 
     @abstractmethod
     def preview_info(self):
@@ -63,4 +64,31 @@ class ticket():
         print("Time:",self.time)
         print("Destination:",self.destination)
         
-        
+        #pilot class
+class Pilot(People):
+    def __init__(self,Name,Age,phone,address,ID,flight_hours : int,license_num : int,cirtefication : list[str],flights : int):
+        super().__init__(Name,Age,phone,address,ID)
+        self.flight_hours=flight_hours
+        self.license_num=license_num
+        self.cirtefication=cirtefication
+        self.flights=flights
+    def assign_flight(self,done:int):
+        self.flights+=done #done her is number of flights that is done it will be added to the number of flights
+    def flight_hours(self):
+        return self.flight_hours
+    def display_info(self):
+        print(f"Pilot Name : {self.Name} , Pilot Age: {self.Age}")
+        print(f"Pilot Phone number: {self.phone}, Piolt Address: {self.address}")  
+        print(f"Pilot License: {self.license_num} , Pilot ID : {self.ID}")
+        print(f"Pilot cirtefications : {','.join(self.cirtefication)}")
+    @abstractmethod
+    def possetion(self):
+        pass    
+# sub class to print the Pilot possetion and how many hours and flight_hours and cirtefications dose he take to be in this possetion    
+class MilitaryPilot(Pilot):
+    def __init__(self, flight_hours, license_num, certifications, clearance_level):
+        super().__init__(flight_hours, license_num, certifications)
+        self.clearance_level = clearance_level
+
+    def possesion(self):
+        print(f"This pilot possesses clearance level: {self.clearance_level}")    
