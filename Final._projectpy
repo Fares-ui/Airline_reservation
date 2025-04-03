@@ -5,7 +5,7 @@ from typing import List
 
 
 class People(ABC):
-    def __init__(self, name: str, age: int, phone: str, address: str, ID: str):
+    def __init__(self, name: str, age: int, phone: str, address: str, ID: int):
         self.name = name
         self.age = age
         self.phone = phone
@@ -172,6 +172,47 @@ class Pilot(People):
     def possession(self):
         pass
 
+class Baggage:
+    def __init__(self, baggage_id, passenger, weight, baggage_fee, status):
+        self.baggage_id = baggage_id
+        self.passenger = passenger
+        self.weight = weight
+        self.baggage_fee = baggage_fee
+        self.status = status
+
+    def calculate_fee(self):
+        # Calculate additional fees
+        max_weight = 23
+        extra_fee_per_kg = 10
+        if self.weight > max_weight:
+            excess_weight = self.weight - max_weight
+            extra_fee = excess_weight * extra_fee_per_kg
+            return extra_fee
+        return 0
+
+    def check_baggage_weight(self):
+        # checking the extra_fee of weight
+        extra_fee = self.calculate_fee()
+
+        if extra_fee > 0:
+            print(f"Baggage ID {self.baggage_id}: Your baggage exceeds the limit.")
+            print(f"Excess Weight: {self.weight - 23} kg | Extra Fee: ${extra_fee}")
+            self.baggage_fee += extra_fee
+        else:
+            print(f"Baggage ID {self.baggage_id}: Your baggage is within the allowed limit.")
+
+    def update_baggage_status(self, new_status):
+        # check the status of baggage invalid or not from the list
+        valid_statuses = ["checked in", "loaded", "in transit", "delivered", "lost"]
+        if new_status in valid_statuses:
+            self.status = new_status
+            print(f"Baggage ID {self.baggage_id} status updated to: {self.status}")
+        else:
+            print(f"Invalid status: {new_status}. Please choose from {valid_statuses}")
+
+
+
+
 
 class MilitaryPilot(Pilot):
       def __init__(self, name: str, age: str, phone: str, address: str, ID: str,
@@ -202,6 +243,21 @@ ticket1 = Ticket(4511,10,1545,"20/5/2025","2am","USA")
 ticket1.ticket_details()
 #pilot1 = Pilot()
 #militaryPilot1 = MilitaryPilot()
+# Create instances of the Baggage class
+baggage1 = Baggage(101, "Mohamed", 23, 0, 'checked-in')
+baggage2 = Baggage(102, "Sara", 18, 10, "loaded")
+baggage3 = Baggage(103, "Ali", 30, 15, "in transit")
+
+# Update baggage status
+baggage1.update_baggage_status("in transit")
+baggage2.update_baggage_status("lost")
+baggage3.update_baggage_status("delivered")
+
+# Check baggage weight
+baggage1.check_baggage_weight()
+baggage2.check_baggage_weight()
+baggage3.check_baggage_weight()
+
 
 
 
@@ -209,5 +265,3 @@ ticket1.ticket_details()
 
 
      
-        
-        
