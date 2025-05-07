@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from multipledispatch import dispatch
 from typing import List
 
 # Abstract Base Class for User
@@ -87,9 +86,6 @@ class Baggage(AirlineEntity):
             print("An unexpected error occurred while displaying details:", e)
 
 
-
-
-
 # Seat Class
 class Seat:
     def __init__(self, seat_number: int, class_type: str, price: float):
@@ -140,7 +136,6 @@ class Seat:
             return f"An unexpected error occurred while generating seat string: {e}"
 
 
-
 # Flight Class
 class Flight(AirlineEntity):
     def __init__(self, flight_number: int, origin: str, destination: str, departure_time: str):
@@ -184,13 +179,13 @@ class Flight(AirlineEntity):
 
 # Ticket Class
 class Ticket(AirlineEntity):
-    def __init__(self, ticket_number: int, passenger: Passenger, flight: Flight, seat: Seat,baggage:Baggage, payment_status: bool = False):
+    def __init__(self, ticket_number: int, passenger: Passenger, flight: Flight, seat: Seat, baggage: Baggage = None, payment_status: bool = False):
         try:
             self.__ticket_number = int(ticket_number)
             self.__passenger = passenger
             self.__flight = flight
             self.__seat = seat
-            self.baaggage=baggage
+            self.__baggage = baggage
             self.__payment_status = bool(payment_status)
             self.__payment = None # Payment object for handling payment       
         except ValueError:
@@ -212,15 +207,15 @@ class Ticket(AirlineEntity):
         except Exception as e:
             print("An unexpected error occurred while getting passenger:", e)
 
-    def set_baggage(self,baggage:Baggage):
-        self.__baggage=baggage
-
+    def set_baggage(self, baggage: Baggage):
+        self.__baggage = baggage
 
     def get_seat(self):
         try:
             return self.__seat
         except Exception as e:
             print("An unexpected error occurred while getting seat:", e)
+            
     def update_payment_status(self, status: bool):
         self.__payment_status = status
         
@@ -234,7 +229,7 @@ class Ticket(AirlineEntity):
                   f"Destination: {self.__flight.get_destination()}\n"
                   f"Payment Status: {'Completed ✅' if self.__payment_status else 'Pending⏳'}")
             if self.__baggage:
-                print(f"Baggage ID:{self.baggage.get_baggage_id()}")
+                print(f"Baggage ID: {self.__baggage.get_baggage_id()}")
     
         except AttributeError:
             print("Error: One of the ticket components is missing or improperly set.")
@@ -242,28 +237,27 @@ class Ticket(AirlineEntity):
             print("An unexpected error occurred while viewing ticket:", e)
     
     def create_payment(self, amount: float, card_number: str):
-        
         if self.__payment is None:           
            self.__payment = Payment(self, amount, card_number)
         return self.__payment
 
-   
     def display_details(self):
         try:
             self.view_ticket()
         except Exception as e:
             print("An unexpected error occurred while displaying ticket details:", e)
 
+
 class Payment:
-    def __init__(self, ticket: Ticket, amount: float, card_number:int):
+    def __init__(self, ticket: Ticket, amount: float, card_number: int):
         if amount <= 0:
             raise ValueError("Amount must be a positive number.")
-        if not self.is_valid_card_number(card_number):
+        if not self.is_valid_card_number(str(card_number)):
             raise ValueError("Invalid card number. It must be 16 digits.")    
         self.__ticket = ticket
         self.__amount = float(amount)
         self.__payment_status = False
-        self.__card_number = card_number
+        self.__card_number = str(card_number)
     
     def is_valid_card_number(self, card_number: str) -> bool:
         return card_number.isdigit() and len(card_number) == 16
@@ -292,7 +286,6 @@ class Payment:
         return self.__ticket
 
 
-
 # Airline Class
 class Airline(AirlineEntity):
     def __init__(self, name: str, country: str, fleet_size: int, iata_code: str):
@@ -319,9 +312,8 @@ class AirlineManagementSystem:
     def get_flights(self):
         return self.__flights
 
-
     def admin_menu(self):
-         while True:
+        while True:
             print("\nAdmin Panel")
             print("1. Add New Flight")
             print("2. Add Seats to Flight")
@@ -330,7 +322,6 @@ class AirlineManagementSystem:
             print("5. View Registered Passengers")
             print("6. Cancel a Ticket")
             print("7. Logout")
-            
 
             choice = self.get_valid_input("Enter your choice: ", int)
 
@@ -344,7 +335,6 @@ class AirlineManagementSystem:
                 self.view_all_bookings()
             elif choice == 5:
                 self.view_all_passengers()
-
             elif choice == 6:
                 ticket_number = self.get_valid_input("Enter Ticket Number to Cancel: ", int)
                 self.cancel_ticket(ticket_number)
@@ -359,24 +349,25 @@ class AirlineManagementSystem:
         flight_number = self.get_valid_input("Enter Flight Number: ", int)
 
         for flight in self.get_flights():
-           if flight.get_flights() == flight_number:
-              print("❌ Flight with this number already exists.")
-              return
-
+            if flight.get_flights() == flight_number:
+                print("❌ Flight with this number already exists.")
+                return
 
         while True:
-           origin = self.get_valid_input("Enter Origin: ",str)
-           if origin.isalpha():
-            break
-           else:
-             print("Invalid Input")
+            origin = self.get_valid_input("Enter Origin: ", str)
+            if origin.isalpha():
+                break
+            else:
+                print("Invalid Input")
+                
         while True:
-           destination = self.get_valid_input("Enter Destination: ",str)
-           if destination.isalpha():
-            break
-           else:
-             print("Invalid Input")
-        departure_time = self.get_valid_input("Enter Departure Time: ",str)
+            destination = self.get_valid_input("Enter Destination: ", str)
+            if destination.isalpha():
+                break
+            else:
+                print("Invalid Input")
+                
+        departure_time = self.get_valid_input("Enter Departure Time: ", str)
         flight = Flight(flight_number, origin, destination, departure_time)
         self.__flights.append(flight)
         print("✅ New flight added successfully.")
@@ -385,57 +376,53 @@ class AirlineManagementSystem:
         flight_number = self.get_valid_input("Enter Flight Number to Add Seats: ", int)
 
         for flight in self.__flights:
-            if flight.get_flights()== flight_number:
+            if flight.get_flights() == flight_number:
                 while True:
-                # ✅ Loop until user provides a unique seat number
+                    # Loop until user provides a unique seat number
                     while True:
                         seat_number = self.get_valid_input("Enter Seat Number: ", int)
 
-                    # Check if seat number already exists in flight
+                        # Check if seat number already exists in flight
                         existing_seat = None
                         for seat in flight.get_seats():
                             if seat.get_seat_number() == seat_number:
                                 existing_seat = seat
                                 break
 
-
                         if existing_seat:
                             print(f"❌ Seat number {seat_number} already exists. Please enter a different seat number.")
                         else:
                             break  # Valid seat number
 
-                # ✅ Validate class type input
+                    # Validate class type input
                     while True:   
-                      class_type = input("Enter Class Type (Economy or Business): ").strip().capitalize()
-                      if class_type in ["Economy", "Business"]:
-                          break
-                      print("❌ Invalid class type. Please enter 'Economy' or 'Business'.")
+                        class_type = input("Enter Class Type (Economy or Business): ").strip().capitalize()
+                        if class_type in ["Economy", "Business"]:
+                            break
+                        print("❌ Invalid class type. Please enter 'Economy' or 'Business'.")
 
                     price = self.get_valid_input("Enter Price: ", float)
 
-                   # ✅ Create and add the seat
+                    # Create and add the seat
                     new_seat = Seat(seat_number, class_type, price)
                     flight.add_seat(new_seat)
                     print("✅ Seat added.")
-  
+
                     more = input("Add another seat? (y/n): ").lower()
                     if more != 'y':
-                        
                         break
                 return
 
         print("❌ Flight not found.")
 
-
-
     def cancel_ticket(self, ticket_number: int):
         for ticket in self.__tickets:
-         if ticket.get_ticket_number() == ticket_number:
-            # Make the seat available again
-            ticket.get_seat().make_available()
-            self.__tickets.remove(ticket)
-            print(f"✅ Ticket {ticket_number} has been successfully canceled.")
-            return
+            if ticket.get_ticket_number() == ticket_number:
+                # Make the seat available again
+                ticket.get_seat().make_available()
+                self.__tickets.remove(ticket)
+                print(f"✅ Ticket {ticket_number} has been successfully canceled.")
+                return
         print(f"❌ Ticket {ticket_number} not found.")
 
     def view_all_bookings(self):
@@ -452,7 +439,6 @@ class AirlineManagementSystem:
             for passenger in self.__passengers:
                 passenger.view_details()
 
-
     def main_menu(self):
         while True:
             print("\nAirline Management System")
@@ -463,14 +449,14 @@ class AirlineManagementSystem:
             choice = self.get_valid_input("Enter your choice: ", int)
 
             if choice == 1:
-                  self.auth_menu()
+                self.auth_menu()
             elif choice == 2:
                 self.admin_login()
             elif choice == 3:
-                  print("Thank you for using the Airline Management System!")
-                  break
+                print("Thank you for using the Airline Management System!")
+                break
             else:
-               print("Invalid choice. Please enter a valid option.")
+                print("Invalid choice. Please enter a valid option.")
 
     def admin_login(self):
         username = input("Enter Admin Username: ")
@@ -481,7 +467,6 @@ class AirlineManagementSystem:
             self.admin_menu()
         else:
             print("❌ Invalid credentials. Access denied.")
-
 
     def auth_menu(self):
         while True:
@@ -524,41 +509,114 @@ class AirlineManagementSystem:
                 self.manage_baggage()
             elif choice == 5:
                 self.view_airline_details()
-
             elif choice == 6:
                 ticket_number = self.get_valid_input("Enter your Ticket Number to cancel: ", int)
                 found = False
                 for ticket in self.__tickets:
-                   if ticket.get_ticket_number() == ticket_number and ticket.get_passenger() == self.__current_passenger:
-                       self.cancel_ticket(ticket_number)
-                       found = True
-                       break
+                    if ticket.get_ticket_number() == ticket_number and ticket.get_passenger() == self.__current_passenger:
+                        self.cancel_ticket(ticket_number)
+                        found = True
+                        break
                 if not found:
-                  print("❌ Ticket not found or does not belong to you.")
-            
+                    print("❌ Ticket not found or does not belong to you.")
             elif choice == 7:
                 self.make_payment_for_ticket()
-                
             elif choice == 8:
                 self.__current_passenger = None
                 print("Logged out successfully.")
                 break
             else:
                 print("Invalid choice. Please try again.")
-    
-    
+
+    def book_seat(self):
+        if not self.__current_passenger:
+            print("Please login to book a seat.")
+            return
+
+        flight_number = self.get_valid_input("Enter Flight Number to Book Seat: ", int)
+        found_flight = None
+        
+        # Find the flight
+        for flight in self.__flights:
+            if flight.get_flights() == flight_number:
+                found_flight = flight
+                break
+        
+        if not found_flight:
+            print("Flight not found.")
+            return
+
+        # Display available seats
+        print("\nAvailable Seats:")
+        available_seats = [seat for seat in found_flight.get_seats() if seat.is_available()]
+        if not available_seats:
+            print("No available seats on this flight.")
+            return
+        
+        for seat in available_seats:
+            print(seat)
+
+        # Get seat number to book
+        while True:
+            seat_number = self.get_valid_input("\nEnter Seat Number to book (or 0 to cancel): ", int)
+            if seat_number == 0:
+                return
+            
+            # Find the seat
+            selected_seat = None
+            for seat in found_flight.get_seats():
+                if seat.get_seat_number() == seat_number:
+                    selected_seat = seat
+                    break
+            
+            if not selected_seat:
+                print("Seat not found. Please try again.")
+                continue
+                
+            if not selected_seat.is_available():
+                print("Seat is already booked. Please choose another seat.")
+                continue
+                
+            # Book the seat
+            if selected_seat.book_seat():
+                # Create ticket
+                ticket = Ticket(len(self.__tickets) + 1, self.__current_passenger, found_flight, selected_seat,None)  # No baggage initially
+                self.__tickets.append(ticket)
+                print("\nSeat booked successfully!")
+                ticket.view_ticket()
+                
+                # Ask about baggage
+                add_baggage = input("\nWould you like to add baggage? (y/n): ").lower()
+                if add_baggage == 'y':
+                    self.manage_baggage_for_ticket(ticket)
+                break
+            else:
+                print("Failed to book seat. Please try again.")
+
+    def manage_baggage_for_ticket(self, ticket):
+        print("\nAdding Baggage to Ticket")
+        baggage_id = self.get_valid_input("Enter Baggage ID: ", int)
+        weight = self.get_valid_input("Enter Baggage Weight (in kg): ", float)
+        baggage = Baggage(baggage_id, weight)
+        baggage.check_weight(allowed_weight=23)
+        baggage.display_details()
+        ticket.set_baggage(baggage)
+        self.__baggage.append(baggage)
+        print("Baggage added to ticket successfully!")
 
     def make_payment_for_ticket(self):
-        
         if not self.__current_passenger:
             print("Please login to make a payment.")
             return
+            
         ticket_number = self.get_valid_input("Enter your Ticket Number to make payment: ", int)
         ticket = None
+        
         for t in self.__tickets:
             if t.get_ticket_number() == ticket_number and t.get_passenger() == self.__current_passenger:
                 ticket = t
-            break
+                break
+                
         if ticket:
             if ticket._Ticket__payment_status: 
                 print(f"✅ Payment for Ticket {ticket_number} is already completed.")
@@ -569,10 +627,8 @@ class AirlineManagementSystem:
                     card_number = input("Enter your 16-digit card number: ").strip()
                     if card_number.isdigit() and len(card_number) == 16:
                         break
-                        
                     else:
                         print("❌ Invalid card number. Please enter exactly 16 digits.")
-
 
                 payment = ticket.create_payment(amount, card_number)
                 payment.make_payment()
@@ -610,6 +666,7 @@ class AirlineManagementSystem:
                 break
             else:
                 print("Invalid passport number! Please enter digits only.")
+                
         passenger = Passenger(name, age, phone, address, passport_no)
         self.__passengers.append(passenger)
         print(f"Passenger {name} registered successfully!")
@@ -638,33 +695,6 @@ class AirlineManagementSystem:
         for flight in self.__flights:
             flight.display_details()
 
-    def book_seat(self):
-        if not self.__current_passenger:
-            print("Please login to book a seat.")
-            return
-
-        flight_number = self.get_valid_input("Enter Flight Number to Book Seat: ", int)
-        found_flight = None
-        for flight in self.__flights:
-            if flight._Flight__flight_number == flight_number:
-                found_flight = flight
-                break
-        if not found_flight:
-            print("Flight not found.")
-            return
-
-        while True:
-            seat_number = self.get_valid_input("Enter Seat Number: ", int)
-            seat = found_flight.book_seat(seat_number)
-            if seat:
-                ticket = Ticket(len(self.__tickets) + 1, self.__current_passenger, found_flight, seat)
-                self.__tickets.append(ticket)
-                print("Seat booked successfully!")
-                ticket.view_ticket()
-                break
-            else:
-                print("Please try booking a different seat.")
-
     def view_tickets(self):
         if not self.__current_passenger:
             print("Please login to view your tickets.")
@@ -691,43 +721,17 @@ class AirlineManagementSystem:
         airline.display_details()
 
 
-    #@dispatch(Passenger)
-    #def handle_entity(entity: Passenger):       
-       #print("Handling Passenger:")
-       #entity.view_details()
-
-
-    #@dispatch(Flight)
-    #def handle_entity(entity: Flight):
-        #print("Handling Flight:")
-        #entity.display_details()
-
-
-    #@dispatch(Ticket)
-    #def handle_entity(entity: Ticket):
-        
-       #print("Handling Ticket:")
-       #entity.display_details()
-
-
-    #@dispatch(Baggage)
-    #def handle_entity(entity: Baggage):
-        #print("Handling Baggage:")
-        #entity.display_details()
-
-
 if __name__ == "__main__":
     system = AirlineManagementSystem()
 
+    # Initialize some sample flights and seats
     flight1 = Flight(452, "Cairo", "New York", "2am")
     flight1.add_seat(Seat(14, "Economy", 1000))
     flight1.add_seat(Seat(15, "Economy", 1200))
     
-    flight2=Flight(981, "Cairo", "London","9:30am")
+    flight2 = Flight(981, "Cairo", "London", "9:30am")
     flight2.add_seat(Seat(12, "Economy", 500))
     flight2.add_seat(Seat(14, "Business", 1200))
-    
-
     
     flight3 = Flight(985, "Cairo", "Paris", "11:00am")
     flight3.add_seat(Seat(21, "Economy", 950))
@@ -740,7 +744,6 @@ if __name__ == "__main__":
     flight5 = Flight(839, "Cairo", "Jeddah", "1:15pm")
     flight5.add_seat(Seat(25, "Economy", 350))
     flight5.add_seat(Seat(5, "Business", 800))
-
     
     system._AirlineManagementSystem__flights.append(flight1)
     system._AirlineManagementSystem__flights.append(flight2)
